@@ -3,35 +3,23 @@ package main
 import (
 	"image"
 	"image/color"
-	"image/draw"
 	"image/jpeg"
 	"log"
 	"math"
-	"math/cmplx"
 	"os"
 )
 
 const (
-	H = 800
-	W = 800
+	H = 800 * 2
+	W = 800 * 2
 )
 
 type Unary func(complex128) complex128
 
-func Hyper(z complex128) complex128 {
-	return z*z*z - complex(100, 0)
-}
-
-func HyperDx(z complex128) complex128 {
-	return 3 * z * z
-}
-
 func NewtonIter(f, fDx Unary, start complex128, nit int) complex128 {
-	//oss := start
 	for i := 0; i < nit; i++ {
 		start = start - f(start)/fDx(start)
 	}
-	//log.Println("way", Dst(oss, start))
 	return start
 }
 
@@ -55,14 +43,26 @@ func ClosetPoint(p complex128, ps []complex128) int {
 }
 
 func main() {
-	var roots []complex128
-	for i := 0; i < 3; i++ {
-		roots = append(roots, cmplx.Rect(100, 2*math.Pi/3.*float64(i)))
+	n := 6
+	GeneratePool(n, W, H)
+}
+
+func GeneratePool(n, w, h int) {
+	poly := RandomPoly(n)
+	polyPrime := poly.Prime()
+	roots := poly.Roots()
+	log.Println(n)
+	for _, r := range roots {
+		log.Println("root ", r)
 	}
-	img := [H][W]float64{}
-	for y := 0; y < H; y++ {
-		for x := 0; x < W; x++ {
-			p := NewtonIter(Hyper, HyperDx, complex(float64(x-W/2), float64(y-H/2)), 100)
+	img := make([][]float64, h, h)
+	for i := 0; i < h; i++ {
+		img[i] = make([]float64, w, w)
+	}
+
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			p := NewtonIter(poly.Eval, polyPrime.Eval, complex(float64(x-W/2), float64(y-H/2)), 10)
 			closestRoot := ClosetPoint(p, roots)
 			img[y][x] = 255. / float64(len(roots)-closestRoot)
 		}
@@ -71,10 +71,13 @@ func main() {
 	drawAndSave(img, roots)
 }
 
-func drawAndSave(m [H][W]float64, roots []complex128) {
-	im := image.NewRGBA(image.Rect(0, 0, W, H))
-	for y := 0; y < H; y++ {
-		for x := 0; x < W; x++ {
+func drawAndSave(m [][]float64, roots []complex128) {
+	h := len(m)
+	w := len(m[0])
+
+	im := image.NewRGBA(image.Rect(0, 0, w, h))
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
 			a := uint8(m[x][y])
 			im.Set(x, y, color.RGBA{
 				R: a,
@@ -85,9 +88,15 @@ func drawAndSave(m [H][W]float64, roots []complex128) {
 		}
 	}
 	for _, r := range roots {
-		x := int(real(r)) + W/2
-		y := int(imag(r)) + H/2
-		draw.Draw(im, image.Rect(x, y, x+10, y+10), image.White, image.Pt(0, 0), draw.Src)
+		x := int(real(r)) + w/2
+		y := int(imag(r)) + h/2
+
+		for i := x; i < x+10; i++ {
+			for j := y; j < y+10; j++ {
+				im.Set(i, j, color.RGBA{200, 0, 0, 255})
+			}
+		}
+		//draw.Draw(im, image.Rect(x, y, x+10, y+10), image.White, image.Pt(0, 0), draw.Src)
 	}
 
 	//im.Set(400, 400, color.RGBA{255, 255, 255, 255})
