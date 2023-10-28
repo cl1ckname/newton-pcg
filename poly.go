@@ -4,8 +4,6 @@ import (
 	"math/rand"
 )
 
-const scale = 400
-
 type Poly struct {
 	comps []float64
 	roots []complex128
@@ -44,7 +42,7 @@ func (p Poly) Roots() []complex128 {
 	return p.roots
 }
 
-func RandomPoly(n int) Poly {
+func RandomPoly(n int, scale float64) Poly {
 	roots := make([]complex128, 0, n)
 	i := n
 	if i%2 == 1 {
@@ -53,8 +51,8 @@ func RandomPoly(n int) Poly {
 		i--
 	}
 	for i > 0 {
-		re := rand.Float64()*scale*2 - scale
-		im := rand.Float64()*scale*2 - scale
+		re := rand.Float64() * scale
+		im := rand.Float64() * scale
 		x1 := complex(re, im)
 		x2 := complex(re, -im)
 		roots = append(roots, x1, x2)
