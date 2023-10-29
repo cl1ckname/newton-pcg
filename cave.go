@@ -1,4 +1,4 @@
-package main
+package npcg
 
 import (
 	"image"
@@ -29,7 +29,7 @@ func getImageFromFilePath(filePath string) image.Image {
 	return img
 }
 
-func generateCave(m [][]int) {
+func GenerateCave(m [][]int) {
 	m = smooth(m)
 	h := len(m)
 	w := len(m[0])

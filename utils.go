@@ -1,4 +1,4 @@
-package main
+package npcg
 
 import "math"
 
@@ -77,4 +77,13 @@ func (h HSVColor) RGBA() (r, g, b, a uint32) {
 	}
 
 	return 0, 0, 0, 0xffff
+}
+
+func Mix(img1, img2 [][]int, n int) [][]int {
+	H := len(img1)
+	W := len(img1[0])
+	for p := range mesh(W, H) {
+		img1[p.Y][p.X] = (img1[p.Y][p.X] + img2[p.Y][p.X]) % n
+	}
+	return img1
 }

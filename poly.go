@@ -1,4 +1,4 @@
-package main
+package npcg
 
 import (
 	"math/rand"
