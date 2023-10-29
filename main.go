@@ -1,16 +1,12 @@
 package main
 
 import (
-	"image"
-	"image/color"
-	"image/jpeg"
 	"log"
-	"os"
 )
 
 const (
-	H = 800 * 2
-	W = 800 * 2
+	H = 160
+	W = 240
 )
 
 type Unary func(complex128) complex128
@@ -18,34 +14,35 @@ type Unary func(complex128) complex128
 func main() {
 	n := 6
 	poly1 := RandomPoly(n, W)
-	img1 := GeneratePool(poly1, W, H, 4)
+	img1 := GeneratePool(poly1, W, H, 1)
 
 	poly2 := RandomPoly(n, W)
-	img2 := GeneratePool(poly2, W, H, 16)
+	img2 := GeneratePool(poly2, W, H, 2)
 
 	for p := range mesh(W, H) {
-		img1[p.Y][p.X] *= img2[p.Y][p.X] / 255
+		img1[p.Y][p.X] = (img1[p.Y][p.X] + img2[p.Y][p.X]) % n
 	}
 
 	poly3 := RandomPoly(n, W)
-	img3 := GeneratePool(poly3, W, H, 32)
+	img3 := GeneratePool(poly3, W, H, 4)
 
 	for p := range mesh(W, H) {
-		img1[p.Y][p.X] *= img3[p.Y][p.X] / 255
+		img1[p.Y][p.X] = (img1[p.Y][p.X] + img3[p.Y][p.X]) % n
 	}
 
-	drawAndSave(img1, poly1.Roots())
+	//drawAndSave(img1, poly1.Roots())
+	generateCave(img1)
 }
 
-func GeneratePool(poly Poly, w, h int, scale float64) [][]float64 {
+func GeneratePool(poly Poly, w, h int, scale float64) [][]int {
 	polyPrime := poly.Prime()
 	roots := poly.Roots()
 	for _, r := range roots {
 		log.Println("root ", r)
 	}
-	img := make([][]float64, h, h)
+	img := make([][]int, h, h)
 	for i := 0; i < h; i++ {
-		img[i] = make([]float64, w, w)
+		img[i] = make([]int, w, w)
 	}
 
 	for p := range mesh(w, h) {
@@ -54,44 +51,7 @@ func GeneratePool(poly Poly, w, h int, scale float64) [][]float64 {
 		yy := float64(y) / scale
 		p := NewtonIter(poly.Eval, polyPrime.Eval, complex(xx, yy), 5)
 		closestRoot := ClosetPoint(p, roots)
-		img[y][x] = 255. / float64(len(roots)-closestRoot)
+		img[y][x] = closestRoot
 	}
 	return img
-}
-
-func drawAndSave(m [][]float64, roots []complex128) {
-	h := len(m)
-	w := len(m[0])
-
-	im := image.NewRGBA(image.Rect(0, 0, w, h))
-	for y := 0; y < h; y++ {
-		for x := 0; x < w; x++ {
-			a := uint8(m[x][y])
-			im.Set(x, y, HSVColor{
-				H: uint16(a) * 256,
-				S: 128,
-				V: 255,
-			})
-		}
-	}
-	for _, r := range roots {
-		x := int(real(r))
-		y := int(imag(r))
-
-		for i := x; i < x+10; i++ {
-			for j := y; j < y+10; j++ {
-				im.Set(i, j, color.RGBA{200, 0, 0, 255})
-			}
-		}
-	}
-	f, err := os.Create("out.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	opt := jpeg.Options{Quality: 50}
-	err = jpeg.Encode(f, im, &opt)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
