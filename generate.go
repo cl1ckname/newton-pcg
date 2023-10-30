@@ -6,12 +6,19 @@ import (
 
 type Unary func(complex128) complex128
 
-func RandomPool(n, W, H int, scale float64) [][]int {
-	poly1 := RandomPoly(n, scale)
-	return GeneratePool(poly1, W, H, scale)
+type GenerationOpts struct {
+	Scale  float64
+	A      complex128
+	Offset complex128
+	Nit    int
 }
 
-func GeneratePool(poly Poly, w, h int, scale float64) [][]int {
+func RandomPool(n, W, H int, opts GenerationOpts) [][]int {
+	poly1 := RandomPoly(n, opts.Scale)
+	return GeneratePool(poly1, W, H, opts)
+}
+
+func GeneratePool(poly Poly, w, h int, opts GenerationOpts) [][]int {
 	polyPrime := poly.Prime()
 	roots := poly.Roots()
 	for _, r := range roots {
@@ -24,9 +31,9 @@ func GeneratePool(poly Poly, w, h int, scale float64) [][]int {
 
 	for p := range mesh(w, h) {
 		x, y := p.X, p.Y
-		xx := float64(x) / scale
-		yy := float64(y) / scale
-		p := NewtonIter(poly.Eval, polyPrime.Eval, complex(xx, yy), 20)
+		xx := float64(x) / opts.Scale
+		yy := float64(y) / opts.Scale
+		p := NewtonIter(poly.Eval, polyPrime.Eval, complex(xx, yy), opts.Nit, opts.A)
 		closestRoot := ClosetPoint(p, roots)
 		img[y][x] = closestRoot
 	}

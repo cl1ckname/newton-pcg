@@ -2,9 +2,9 @@ package npcg
 
 import "math"
 
-func NewtonIter(f, fDx Unary, start complex128, nit int) complex128 {
+func NewtonIter(f, fDx Unary, start complex128, nit int, a complex128) complex128 {
 	for i := 0; i < nit; i++ {
-		start = start - 3*f(start)/fDx(start)
+		start = start - a*f(start)/fDx(start)
 	}
 	return start
 }
