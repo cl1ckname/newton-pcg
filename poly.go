@@ -62,6 +62,13 @@ func RandomPoly(n int, scale float64) Poly {
 	return Poly{coefs, roots}
 }
 
+func FromRoots(roots []complex128) Poly {
+	return Poly{
+		comps: compsFromRoots(roots),
+		roots: roots,
+	}
+}
+
 func compsFromRoots(roots []complex128) []float64 {
 	coefs := make([]complex128, len(roots)+1)
 	coefs[1] = complex(1, 0)

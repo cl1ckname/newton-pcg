@@ -1,9 +1,5 @@
 package npcg
 
-import (
-	"log"
-)
-
 type Unary func(complex128) complex128
 
 type GenerationOpts struct {
@@ -21,9 +17,6 @@ func RandomPool(n, W, H int, opts GenerationOpts) [][]int {
 func GeneratePool(poly Poly, w, h int, opts GenerationOpts) [][]int {
 	polyPrime := poly.Prime()
 	roots := poly.Roots()
-	for _, r := range roots {
-		log.Println("root ", r)
-	}
 	img := make([][]int, h, h)
 	for i := 0; i < h; i++ {
 		img[i] = make([]int, w, w)
@@ -31,8 +24,8 @@ func GeneratePool(poly Poly, w, h int, opts GenerationOpts) [][]int {
 
 	for p := range mesh(w, h) {
 		x, y := p.X, p.Y
-		xx := float64(x) / opts.Scale
-		yy := float64(y) / opts.Scale
+		xx := (float64(x) + real(opts.Offset)) / opts.Scale
+		yy := (float64(y) + imag(opts.Offset)) / opts.Scale
 		p := NewtonIter(poly.Eval, polyPrime.Eval, complex(xx, yy), opts.Nit, opts.A)
 		closestRoot := ClosetPoint(p, roots)
 		img[y][x] = closestRoot
