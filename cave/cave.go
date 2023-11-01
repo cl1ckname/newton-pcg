@@ -1,10 +1,11 @@
-package npcg
+package cave
 
 import (
 	"image"
 	"image/draw"
 	"image/png"
 	"log"
+	"newton-pcg/core"
 	"os"
 )
 
@@ -62,13 +63,13 @@ func GenerateCave(m [][]int) {
 			draw.Draw(canvas, pos, brush, image.Point{}, draw.Src)
 		}
 	}
-	saveImage(canvas)
+	core.SaveImage(canvas)
 }
 
 func smooth(m [][]int) [][]int {
 	h := len(m)
 	w := len(m[0])
-	for p := range mesh(w-2, h-2) {
+	for p := range core.Mesh(w-2, h-2) {
 		x := p.X + 1
 		y := p.Y + 1
 		s := m[y][x+1] + m[y][x-1] + m[y+1][x] + m[y-1][x]

@@ -1,4 +1,4 @@
-package npcg
+package core
 
 type Unary func(complex128) complex128
 
@@ -22,7 +22,7 @@ func GeneratePool(poly Poly, w, h int, opts GenerationOpts) [][]int {
 		img[i] = make([]int, w, w)
 	}
 
-	for p := range mesh(w, h) {
+	for p := range Mesh(w, h) {
 		x, y := p.X, p.Y
 		xx := (float64(x) + real(opts.Offset)) / opts.Scale
 		yy := (float64(y) + imag(opts.Offset)) / opts.Scale

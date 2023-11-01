@@ -1,15 +1,13 @@
-package npcg
+package pic
 
 import (
 	"image"
 	"image/color"
 	"image/color/palette"
-	"image/jpeg"
-	"log"
-	"os"
+	"newton-pcg/core"
 )
 
-func drawAndSave(m [][]int, roots []complex128) {
+func DrawAndSave(m [][]int, roots []complex128) {
 	h := len(m)
 	w := len(m[0])
 
@@ -17,7 +15,7 @@ func drawAndSave(m [][]int, roots []complex128) {
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
 			a := uint8(255 / float64(len(roots)-m[x][y]))
-			im.Set(x, y, HSVColor{
+			im.Set(x, y, core.HSVColor{
 				H: uint16(a) * 256,
 				S: 128,
 				V: 224,
@@ -34,7 +32,7 @@ func drawAndSave(m [][]int, roots []complex128) {
 			}
 		}
 	}
-	saveImage(im)
+	core.SaveImage(im)
 }
 
 func ToImage(m [][]int, roots []complex128) *image.Paletted {
@@ -45,7 +43,7 @@ func ToImage(m [][]int, roots []complex128) *image.Paletted {
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
 			a := uint8(255/float64(len(roots))) * uint8(m[x][y])
-			im.Set(x, y, HSVColor{
+			im.Set(x, y, core.HSVColor{
 				H: uint16(a),
 				S: 128,
 				V: 224,
@@ -63,17 +61,4 @@ func ToImage(m [][]int, roots []complex128) *image.Paletted {
 		}
 	}
 	return im
-}
-
-func saveImage(img image.Image) {
-	f, err := os.Create("out.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	opt := jpeg.Options{Quality: 50}
-	err = jpeg.Encode(f, img, &opt)
-	if err != nil {
-		log.Fatal(err)
-	}
 }

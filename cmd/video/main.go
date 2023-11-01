@@ -7,7 +7,8 @@ import (
 	"math"
 	"math/cmplx"
 	"math/rand"
-	np "newton-pcg"
+	np2 "newton-pcg/np"
+	np "newton-pcg/pic"
 	"os"
 	"sync"
 )
@@ -17,7 +18,7 @@ func rootRotation(c, start complex128) (res [frames]complex128) {
 	if rand.Float32() > 0.5 {
 		phst *= -1
 	}
-	rad := np.Dst(c, start)
+	rad := np2.Dst(c, start)
 	for i := 0; i < frames; i++ {
 		u := cmplx.Rect(rad, float64(i)*phst)
 		res[i] = u + c
@@ -33,7 +34,7 @@ const (
 )
 
 func main() {
-	p := np.RandomPoly(n, w)
+	p := np2.RandomPoly(n, w)
 	roots := p.Roots()
 	rotations := [n][frames]complex128{}
 	for i := 0; i < n; i++ {
@@ -54,8 +55,8 @@ func main() {
 			for j := 0; j < n; j++ {
 				newRoots[j] = rotations[j][frame]
 			}
-			poly := np.FromRoots(newRoots[:])
-			pool := np.GeneratePool(poly, w, h, np.GenerationOpts{
+			poly := np2.FromRoots(newRoots[:])
+			pool := np2.GeneratePool(poly, w, h, np2.GenerationOpts{
 				Scale:  1,
 				A:      complex(4, 2),
 				Offset: 0,

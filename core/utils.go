@@ -1,6 +1,12 @@
-package npcg
+package core
 
-import "math"
+import (
+	"image"
+	"image/jpeg"
+	"log"
+	"math"
+	"os"
+)
 
 func NewtonIter(f, fDx Unary, start complex128, nit int, a complex128) complex128 {
 	for i := 0; i < nit; i++ {
@@ -32,7 +38,7 @@ type P struct {
 	X, Y int
 }
 
-func mesh(w, h int) <-chan P {
+func Mesh(w, h int) <-chan P {
 	c := make(chan P, w*h)
 	go func() {
 		for x := 0; x < w; x++ {
@@ -53,27 +59,27 @@ type HSVColor struct {
 func (h HSVColor) RGBA() (r, g, b, a uint32) {
 	// Direct implementation of the graph in this image:
 	// https://en.wikipedia.org/wiki/HSL_and_HSV#/media/File:HSV-RGB-comparison.svg
-	max := uint32(h.V) * 255
-	min := uint32(h.V) * uint32(255-h.S)
+	mx := uint32(h.V) * 255
+	mn := uint32(h.V) * uint32(255-h.S)
 
 	h.H %= 360
 	segment := h.H / 60
 	offset := uint32(h.H % 60)
-	mid := ((max - min) * offset) / 60
+	mid := ((mx - mn) * offset) / 60
 
 	switch segment {
 	case 0:
-		return max, min + mid, min, 0xffff
+		return mx, mn + mid, mn, 0xffff
 	case 1:
-		return max - mid, max, min, 0xffff
+		return mx - mid, mx, mn, 0xffff
 	case 2:
-		return min, max, min + mid, 0xffff
+		return mn, mx, mn + mid, 0xffff
 	case 3:
-		return min, max - mid, max, 0xffff
+		return mn, mx - mid, mx, 0xffff
 	case 4:
-		return min + mid, min, max, 0xffff
+		return mn + mid, mn, mx, 0xffff
 	case 5:
-		return max, min, max - mid, 0xffff
+		return mx, mn, mx - mid, 0xffff
 	}
 
 	return 0, 0, 0, 0xffff
@@ -82,8 +88,21 @@ func (h HSVColor) RGBA() (r, g, b, a uint32) {
 func Mix(img1, img2 [][]int, n int) [][]int {
 	H := len(img1)
 	W := len(img1[0])
-	for p := range mesh(W, H) {
+	for p := range Mesh(W, H) {
 		img1[p.Y][p.X] = (img1[p.Y][p.X] + img2[p.Y][p.X]) % n
 	}
 	return img1
+}
+
+func SaveImage(img image.Image) {
+	f, err := os.Create("out.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	opt := jpeg.Options{Quality: 50}
+	err = jpeg.Encode(f, img, &opt)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
