@@ -13,6 +13,7 @@ const (
 	stonePath   = "assets/Stone_Block.png"
 	ironOrePath = "assets/Iron_Ore_(placed).png"
 	goldOrePath = "assets/Gold_Ore_(placed).png"
+	blackPath   = "assets/black.png"
 	imageSize   = 16
 )
 
@@ -37,6 +38,7 @@ func GenerateCave(m [][]int) {
 	dirt := getImageFromFilePath(dirtPath)
 	iron := getImageFromFilePath(ironOrePath)
 	gold := getImageFromFilePath(goldOrePath)
+	black := getImageFromFilePath(blackPath)
 
 	canvas := image.NewRGBA(image.Rect(0, 0, w*imageSize, h*imageSize))
 	r := image.Rect(0, 0, 16, 16)
@@ -44,15 +46,20 @@ func GenerateCave(m [][]int) {
 		for x, v := range row {
 			offset := image.Pt(x*imageSize, y*imageSize)
 			pos := r.Add(offset)
-			if v == 0 {
-				draw.Draw(canvas, pos, stone, image.Point{}, draw.Src)
-			} else if v == 1 {
-				draw.Draw(canvas, pos, dirt, image.Point{}, draw.Src)
-			} else if v == 2 {
-				draw.Draw(canvas, pos, iron, image.Point{}, draw.Src)
-			} else if v == 3 {
-				draw.Draw(canvas, pos, gold, image.Point{}, draw.Src)
+			var brush image.Image
+			switch v {
+			case 0:
+				brush = stone
+			case 1:
+				brush = dirt
+			case 2:
+				brush = iron
+			case 3:
+				brush = gold
+			default:
+				brush = black
 			}
+			draw.Draw(canvas, pos, brush, image.Point{}, draw.Src)
 		}
 	}
 	saveImage(canvas)
