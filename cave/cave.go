@@ -18,6 +18,10 @@ const (
 	goldOrePath = "assets/Gold_Ore_(placed).png"
 	blackPath   = "assets/black.png"
 	siltPath    = "assets/Silt_Block.png"
+	whitePath   = "assets/White_background.png"
+	marblePath  = "assets/Marble_Block.png"
+	fleshPath   = "assets/Flesh_Block.png"
+	mythrilPath = "assets/Mythril_Ore.png"
 	imageSize   = 8
 )
 
@@ -27,6 +31,10 @@ var iron = getImageFromFilePath(ironOrePath)
 var gold = getImageFromFilePath(goldOrePath)
 var black = getImageFromFilePath(blackPath)
 var silt = getImageFromFilePath(siltPath)
+var white = getImageFromFilePath(whitePath)
+var marble = getImageFromFilePath(marblePath)
+var flesh = getImageFromFilePath(fleshPath)
+var mythril = getImageFromFilePath(mythrilPath)
 
 func getImageFromFilePath(filePath string) image.Image {
 	f, err := os.Open(filePath)
@@ -42,7 +50,7 @@ func getImageFromFilePath(filePath string) image.Image {
 }
 
 func DrawWorld(m [][]int) {
-	m = smooth(m)
+	//m = smooth(m)
 	h := len(m)
 	w := len(m[0])
 
@@ -57,15 +65,23 @@ func DrawWorld(m [][]int) {
 			case 0:
 				brush = black
 			case 1:
-				brush = dirt
-			case 2:
-				brush = iron
-			case 3:
-				brush = gold
-			case 4:
-				brush = silt
-			default:
 				brush = stone
+			case 2:
+				brush = dirt
+			case 3:
+				brush = silt
+			case 4:
+				brush = marble
+			case 5:
+				brush = iron
+			case 6:
+				brush = gold
+			case 7:
+				brush = flesh
+			case 8:
+				brush = mythril
+			default:
+				brush = white
 			}
 			draw.Draw(canvas, pos, brush, image.Point{}, draw.Src)
 		}
@@ -91,17 +107,17 @@ func SurfaceMask(w, h, level int) [][]int {
 		img[i] = make([]int, w)
 	}
 	var sins []func(x float64) float64
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 6; i++ {
+		w := float64(1+rand.Intn(8)) / 100
+		A := 5. * float64(1+rand.Intn(5))
 		sins = append(sins, func(x float64) float64 {
-			w := 250. + rand.Float64()*100
-			A := rand.Float64() * 32
-			return A*math.Sin(x/w) - (rand.Float64() * math.Pi)
+			return A * math.Sin(x/w)
 		})
 	}
 	sinsum := func(x int) int {
 		r := 0
 		for _, f := range sins {
-			r += int(f(float64(x)))
+			r += int(f(float64(x) / float64(w)))
 		}
 		if level+r < 0 {
 			return 0

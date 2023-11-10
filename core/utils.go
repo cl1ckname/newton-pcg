@@ -4,57 +4,14 @@ import (
 	"image"
 	"image/jpeg"
 	"log"
-	"math"
 	"os"
 )
-
-type Metric func(complex128, complex128) float64
-
-func Euclyd(p1, p2 complex128) float64 {
-	dx := real(p1) - real(p2)
-	dy := imag(p1) - imag(p2)
-	return math.Sqrt(dx*dx + dy*dy)
-}
 
 func NewtonIter(f, fDx Unary, start complex128, nit int, a complex128) complex128 {
 	for i := 0; i < nit; i++ {
 		start = start - a*f(start)/fDx(start)
 	}
 	return start
-}
-
-func ThreashMetricClosetPoint(p complex128, ps []complex128, Dst Metric, thr float64) int {
-	cls := 0
-	dst := Dst(p, ps[0])
-	for i, p2 := range ps {
-		d := Dst(p, p2)
-		if d < dst && d < thr {
-			dst = d
-			cls = i
-		}
-	}
-	return cls
-}
-
-func Dst(p1, p2 complex128) float64 {
-	//dx := real(p1) - real(p2)
-	//dy := imag(p1) - imag(p2)
-	//return math.Sqrt(dx*dx + dy*dy)
-	//return math.Max(math.Abs(real(p1-p2)), math.Abs(imag(p1-p2)))
-	return math.Abs(real(p1-p2)) + math.Abs(imag(p1-p2))
-}
-
-func ClosetPoint(p complex128, ps []complex128) int {
-	cls := 0
-	dst := Dst(p, ps[0])
-	for i, p2 := range ps {
-		d := Dst(p, p2)
-		if d < dst && d < 0.5 {
-			dst = d
-			cls = i
-		}
-	}
-	return cls
 }
 
 type P struct {
@@ -126,6 +83,18 @@ func Mul(img1, img2 [][]int) [][]int {
 	return img1
 }
 
+func Overlay(img1, img2 [][]int, b int) [][]int {
+	H := len(img1)
+	W := len(img1[0])
+	for p := range Mesh(W, H) {
+		v := img2[p.Y][p.X]
+		if v != b {
+			img1[p.Y][p.X] = v
+		}
+	}
+	return img1
+}
+
 func AddInt(img1 [][]int, i int) [][]int {
 	H := len(img1)
 	W := len(img1[0])
@@ -146,4 +115,8 @@ func SaveImage(img image.Image) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func Ptr[T any](v T) *T {
+	return &v
 }
