@@ -18,11 +18,11 @@ func main() {
 	rand.Seed(42)
 	poly1 := core.RandomPoly(N, 15)
 	sp1 := core.GenerateSpeedPool(poly1, W, H, core.GenerationOpts{
-		Scale:  5000,
+		Scale:  7000,
 		A:      complex(4, 4),
 		Offset: complex(-360, -380),
-		Nit:    10,
-		Metric: core.Ptr(core.Mankhaten),
+		Nit:    11,
+		//Metric: core.Ptr(core.Mankhaten),
 	})
 
 	//sp2 := core.GenerateSpeedPool(poly1, W, H, core.GenerationOpts{

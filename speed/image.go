@@ -19,15 +19,15 @@ func DrawAndSave(m [][]int) {
 		}
 	}
 	//println(mx)
-	norm := math.MaxUint8 / mx
+	norm := math.MaxUint16 / mx
 
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
 			a := float64(m[x][y]) * norm
 			im.Set(x, y, core.HSVColor{
-				H: 0,
-				S: uint8(a),
-				V: uint8(a),
+				H: uint16(a),
+				S: 255,
+				V: 255,
 			})
 		}
 	}

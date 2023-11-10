@@ -65,13 +65,16 @@ func GenerateSpeedPool(poly Poly, w, h int, opts GenerationOpts) [][]int {
 		if opts.Metric != nil {
 			metric = *opts.Metric
 		}
-		var thr = math.MaxFloat64
-		if opts.DstThresh != nil {
-			thr = *opts.DstThresh
+		//var thr = math.MaxFloat64
+		//if opts.DstThresh != nil {
+		//	thr = *opts.DstThresh
+		//}
+		//img[y][x] = int(metric(complex(xx, yy), p))
+		for r := range roots {
+			img[y][x] += int(metric(roots[r], p))
 		}
-		img[y][x] = int(metric(complex(xx, yy), p))
-		closestRoot := ThreashMetricClosetPoint(p, roots, metric, thr)
-		img[y][x] = int(metric(roots[closestRoot], complex(xx, yy)))
+		img[y][x] = img[y][x] / len(roots)
+		//closestRoot := ThreashMetricClosetPoint(p, roots, metric, thr)
 	}
 	return img
 }
