@@ -2,6 +2,7 @@ package speed
 
 import (
 	"image"
+	"math"
 	"newton-pcg/core"
 )
 
@@ -17,16 +18,16 @@ func DrawAndSave(m [][]int) {
 			mx = m
 		}
 	}
-	println(mx)
-	norm := 255 / mx
+	//println(mx)
+	norm := math.MaxUint8 / mx
 
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
 			a := float64(m[x][y]) * norm
 			im.Set(x, y, core.HSVColor{
-				H: uint16(a),
-				S: 128,
-				V: 224,
+				H: 0,
+				S: uint8(a),
+				V: uint8(a),
 			})
 		}
 	}

@@ -83,6 +83,15 @@ func Mul(img1, img2 [][]int) [][]int {
 	return img1
 }
 
+func Sum(img1, img2 [][]int) [][]int {
+	H := len(img1)
+	W := len(img1[0])
+	for p := range Mesh(W, H) {
+		img1[p.Y][p.X] += img2[p.Y][p.X]
+	}
+	return img1
+}
+
 func Overlay(img1, img2 [][]int, b int) [][]int {
 	H := len(img1)
 	W := len(img1[0])
