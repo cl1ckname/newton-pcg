@@ -18,7 +18,7 @@ func rootRotation(c, start complex128) (res [frames]complex128) {
 	if rand.Float32() > 0.5 {
 		phst *= -1
 	}
-	rad := core.Dst(c, start)
+	rad := core.Euclyd(c, start)
 	for i := 0; i < frames; i++ {
 		u := cmplx.Rect(rad, float64(i)*phst)
 		res[i] = u + c
