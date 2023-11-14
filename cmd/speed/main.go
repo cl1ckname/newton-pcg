@@ -25,15 +25,15 @@ func main() {
 		//Metric: core.Ptr(core.Mankhaten),
 	})
 
-	//sp2 := core.GenerateSpeedPool(poly1, W, H, core.GenerationOpts{
-	//	Scale:     1000,
-	//	A:         complex(1, 4),
-	//	Offset:    complex(-30, -380),
-	//	Nit:       8,
-	//	Metric:    nil,
-	//	DstThresh: nil,
-	//})
-	//sp1 = core.Sum(sp1, sp2)
+	sp2 := core.GenerateSpeedPool(poly1, W, H, core.GenerationOpts{
+		Scale:     1000,
+		A:         complex(1, 4),
+		Offset:    complex(-30, -380),
+		Nit:       8,
+		Metric:    nil,
+		DstThresh: nil,
+	})
+	sp1 = core.Sum(sp1, sp2)
 
 	//for p := range core.Mesh(W, H) {
 	//	if sp1[p.Y][p.X] < 15 || sp1[p.Y][p.X] > 20 {
@@ -42,8 +42,8 @@ func main() {
 	//}
 
 	for p := range core.Mesh(W, H) {
-		if d := sp1[p.Y][p.X]; d > 30 {
-			sp1[p.Y][p.X] = 30
+		if d := sp1.At(p); d > 30 {
+			sp1.Set(p, 30)
 		}
 	}
 
@@ -51,12 +51,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	for _, row := range sp1 {
-		for _, col := range row {
-			f.Write([]byte(strconv.FormatInt(int64(col), 10)))
-			f.Write([]byte(", "))
+
+	for p := range core.Mesh(sp1.W, sp1.H) {
+		f.Write([]byte(strconv.FormatInt(int64(sp1.At(p)), 10)))
+		f.Write([]byte(", "))
+		if p.X == sp1.W-1 {
+			f.Write([]byte("\n"))
 		}
-		f.Write([]byte("\n"))
 	}
 	if err := f.Close(); err != nil {
 		panic(err)

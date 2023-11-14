@@ -49,59 +49,45 @@ func getImageFromFilePath(filePath string) image.Image {
 	return img
 }
 
-func DrawWorld(m [][]int) {
+func DrawWorld(m core.Field) {
 	//m = smooth(m)
-	h := len(m)
-	w := len(m[0])
 
-	canvas := image.NewRGBA(image.Rect(0, 0, w*imageSize, h*imageSize))
+	canvas := image.NewRGBA(image.Rect(0, 0, m.W*imageSize, m.H*imageSize))
 	r := image.Rect(0, 0, 16, 16)
-	for y, row := range m {
-		for x, v := range row {
-			offset := image.Pt(x*imageSize, y*imageSize)
-			pos := r.Add(offset)
-			var brush image.Image
-			switch v {
-			case 0:
-				brush = black
-			case 1:
-				brush = stone
-			case 2:
-				brush = dirt
-			case 3:
-				brush = silt
-			case 4:
-				brush = marble
-			case 5:
-				brush = iron
-			case 6:
-				brush = gold
-			case 7:
-				brush = flesh
-			case 8:
-				brush = mythril
-			default:
-				brush = white
-			}
-			draw.Draw(canvas, pos, brush, image.Point{}, draw.Src)
+
+	for p := range core.Mesh(m.W, m.H) {
+		offset := image.Pt(p.X*imageSize, p.Y*imageSize)
+		pos := r.Add(offset)
+		v := m.At(p)
+		var brush image.Image
+		switch v {
+		case 0:
+			brush = black
+		case 1:
+			brush = stone
+		case 2:
+			brush = dirt
+		case 3:
+			brush = silt
+		case 4:
+			brush = marble
+		case 5:
+			brush = iron
+		case 6:
+			brush = gold
+		case 7:
+			brush = flesh
+		case 8:
+			brush = mythril
+		default:
+			brush = white
 		}
+		draw.Draw(canvas, pos, brush, image.Point{}, draw.Src)
 	}
 	core.SaveImage(canvas)
 }
 
-func smooth(m [][]int) [][]int {
-	h := len(m)
-	w := len(m[0])
-	for p := range core.Mesh(w-2, h-2) {
-		x := p.X + 1
-		y := p.Y + 1
-		s := m[y][x+1] + m[y][x-1] + m[y+1][x] + m[y-1][x]
-		m[y][x] = s / 4
-	}
-	return m
-}
-
-func SurfaceMask(w, h, level int) [][]int {
+func SurfaceMask(w, h, level int) core.Field {
 	img := make([][]int, h)
 	for i := 0; i < h; i++ {
 		img[i] = make([]int, w)
@@ -130,10 +116,14 @@ func SurfaceMask(w, h, level int) [][]int {
 			img[i][x] = 1
 		}
 	}
-	return img
+	return core.Field{
+		W: w,
+		H: h,
+		F: img,
+	}
 }
 
-func CavesMask(proto [][]int, thresh int) [][]int {
+func CavesMask(proto [][]int, thresh int) core.Field {
 	h := len(proto)
 	w := len(proto[0])
 	img := make([][]int, h)
@@ -145,5 +135,9 @@ func CavesMask(proto [][]int, thresh int) [][]int {
 			img[p.Y][p.X] = 1
 		}
 	}
-	return img
+	return core.Field{
+		W: w,
+		H: h,
+		F: img,
+	}
 }

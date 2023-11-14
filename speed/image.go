@@ -6,30 +6,25 @@ import (
 	"newton-pcg/core"
 )
 
-func DrawAndSave(m [][]int) {
-	h := len(m)
-	w := len(m[0])
-
-	im := image.NewRGBA(image.Rect(0, 0, w, h))
+func DrawAndSave(m core.Field) {
+	im := image.NewRGBA(image.Rect(0, 0, m.W, m.H))
 
 	var mx float64
-	for p := range core.Mesh(w, h) {
-		if m := float64(m[p.Y][p.X]); m > mx {
+	for p := range core.Mesh(m.W, m.H) {
+		if m := float64(m.At(p)); m > mx {
 			mx = m
 		}
 	}
 	//println(mx)
 	norm := math.MaxUint16 / mx
 
-	for y := 0; y < h; y++ {
-		for x := 0; x < w; x++ {
-			a := float64(m[x][y]) * norm
-			im.Set(x, y, core.HSVColor{
-				H: uint16(a),
-				S: 255,
-				V: 255,
-			})
-		}
+	for p := range core.Mesh(m.W, m.H) {
+		a := float64(m.At(p)) * norm
+		im.Set(p.X, p.Y, core.HSVColor{
+			H: uint16(a),
+			S: 255,
+			V: 255,
+		})
 	}
 	core.SaveImage(im)
 }

@@ -65,50 +65,40 @@ func (h HSVColor) RGBA() (r, g, b, a uint32) {
 	return 0, 0, 0, 0xffff
 }
 
-func Mix(img1, img2 [][]int, n int) [][]int {
-	H := len(img1)
-	W := len(img1[0])
-	for p := range Mesh(W, H) {
-		img1[p.Y][p.X] = (img1[p.Y][p.X] + img2[p.Y][p.X]) % n
+func Mix(img1, img2 Field, n int) Field {
+	for p := range Mesh(img1.W, img1.H) {
+		img1.Set(p, img1.At(p)+img2.At(p)%n)
 	}
 	return img1
 }
 
-func Mul(img1, img2 [][]int) [][]int {
-	H := len(img1)
-	W := len(img1[0])
-	for p := range Mesh(W, H) {
-		img1[p.Y][p.X] *= img2[p.Y][p.X]
+func Mul(img1, img2 Field) Field {
+	for p := range Mesh(img1.W, img1.H) {
+		img1.Set(p, img1.At(p)*img2.At(p))
 	}
 	return img1
 }
 
-func Sum(img1, img2 [][]int) [][]int {
-	H := len(img1)
-	W := len(img1[0])
-	for p := range Mesh(W, H) {
-		img1[p.Y][p.X] += img2[p.Y][p.X]
+func Sum(img1, img2 Field) Field {
+	for p := range Mesh(img1.W, img1.H) {
+		img1.Set(p, img1.At(p)+img2.At(p))
 	}
 	return img1
 }
 
-func Overlay(img1, img2 [][]int, b int) [][]int {
-	H := len(img1)
-	W := len(img1[0])
-	for p := range Mesh(W, H) {
-		v := img2[p.Y][p.X]
+func Overlay(img1, img2 Field, b int) Field {
+	for p := range Mesh(img1.W, img1.H) {
+		v := img2.At(p)
 		if v != b {
-			img1[p.Y][p.X] = v
+			img1.Set(p, v)
 		}
 	}
 	return img1
 }
 
-func AddInt(img1 [][]int, i int) [][]int {
-	H := len(img1)
-	W := len(img1[0])
-	for p := range Mesh(W, H) {
-		img1[p.Y][p.X] += i
+func AddInt(img1 Field, i int) Field {
+	for p := range Mesh(img1.W, img1.H) {
+		img1.Set(p, img1.At(p)+i)
 	}
 	return img1
 }
@@ -129,3 +119,8 @@ func SaveImage(img image.Image) {
 func Ptr[T any](v T) *T {
 	return &v
 }
+
+//func Norm(arr [][]int, m int, d int) [][]int {
+//
+//	for p := range Mesh()
+//}

@@ -13,12 +13,12 @@ type GenerationOpts struct {
 	DstThresh *float64
 }
 
-func RandomPool(n, W, H int, opts GenerationOpts) [][]int {
+func RandomPool(n, W, H int, opts GenerationOpts) Field {
 	poly1 := RandomPoly(n, opts.Scale)
 	return GeneratePool(poly1, W, H, opts)
 }
 
-func GeneratePool(poly Poly, w, h int, opts GenerationOpts) [][]int {
+func GeneratePool(poly Poly, w, h int, opts GenerationOpts) Field {
 	polyPrime := poly.Prime()
 	roots := poly.Roots()
 	img := make([][]int, h, h)
@@ -32,7 +32,7 @@ func GeneratePool(poly Poly, w, h int, opts GenerationOpts) [][]int {
 		yy := (float64(y) + imag(opts.Offset)) / opts.Scale
 		p := NewtonIter(poly.Eval, polyPrime.Eval, complex(xx, yy), opts.Nit, opts.A)
 
-		var metric Metric = Euclyd
+		var metric = Euclyd
 		if opts.Metric != nil {
 			metric = *opts.Metric
 		}
@@ -44,10 +44,14 @@ func GeneratePool(poly Poly, w, h int, opts GenerationOpts) [][]int {
 		closestRoot := ThreashMetricClosetPoint(p, roots, metric, thr)
 		img[y][x] = closestRoot
 	}
-	return img
+	return Field{
+		W: w,
+		H: h,
+		F: img,
+	}
 }
 
-func GenerateSpeedPool(poly Poly, w, h int, opts GenerationOpts) [][]int {
+func GenerateSpeedPool(poly Poly, w, h int, opts GenerationOpts) Field {
 	polyPrime := poly.Prime()
 	roots := poly.Roots()
 	img := make([][]int, h, h)
@@ -76,5 +80,9 @@ func GenerateSpeedPool(poly Poly, w, h int, opts GenerationOpts) [][]int {
 		img[y][x] = img[y][x] / len(roots)
 		//closestRoot := ThreashMetricClosetPoint(p, roots, metric, thr)
 	}
-	return img
+	return Field{
+		W: w,
+		H: h,
+		F: img,
+	}
 }
