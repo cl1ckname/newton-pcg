@@ -41,6 +41,12 @@ func main() {
 	//	}
 	//}
 
+	for p := range core.Mesh(W, H) {
+		if d := sp1[p.Y][p.X]; d > 30 {
+			sp1[p.Y][p.X] = 30
+		}
+	}
+
 	f, err := os.Create("matrix.txt")
 	if err != nil {
 		panic(err)
