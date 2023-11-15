@@ -14,8 +14,10 @@ const (
 
 var SEED = time.Now().Unix()
 
+//var SEED = 42
+
 func main() {
-	rand.Seed(SEED)
+	rand.Seed(int64(SEED))
 	//n := 6
 	img1 := core.RandomPool(6, W, H, core.GenerationOpts{
 		Scale:     15,
@@ -43,12 +45,18 @@ func main() {
 	mask := cave.SurfaceMask(W, H, 120)
 	img1 = core.Mul(img1, mask)
 
-	caveMask := cave.Mask(W, H, 2, 4, SEED)
+	caveMask := cave.Mask(W, H, 1, 4, int64(SEED))
 	img1 = core.Mul(img1, caveMask)
-	caveMask = cave.Mask(W, H, 1, 6, SEED)
+	caveMask = cave.Mask(W, H, 1, 6, int64(SEED))
 	img1 = core.Mul(img1, caveMask)
-	caveMask = cave.Mask(W, H, 0.5, 8, SEED)
+	caveMask = cave.Mask(W, H, 0.5, 8, int64(SEED))
 	img1 = core.Mul(img1, caveMask)
+
+	groundMask := cave.GroundLayer(W, H, 210)
+	groundMask = core.MulI(groundMask, 2)
+	img1 = core.Replace(img1, groundMask)
+
+	img1 = cave.GrassLayer(img1, 2, 10)
 
 	//cavePool := core.RandomPool(5, W, H, core.GenerationOpts{
 	//	Scale:  20,

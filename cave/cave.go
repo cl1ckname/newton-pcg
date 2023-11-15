@@ -23,6 +23,7 @@ const (
 	marblePath  = "assets/Marble_Block.png"
 	fleshPath   = "assets/Flesh_Block.png"
 	mythrilPath = "assets/Mythril_Ore.png"
+	grassPath   = "assets/Grass.png"
 
 	treePath  = "assets/Tree_SpriteSheet_Outlined.png"
 	imageSize = 8
@@ -39,6 +40,7 @@ var marble = getImageFromFilePath(marblePath)
 var flesh = getImageFromFilePath(fleshPath)
 var mythril = getImageFromFilePath(mythrilPath)
 var tree = getImageFromFilePath(treePath)
+var grass = getImageFromFilePath(grassPath)
 
 func getImageFromFilePath(filePath string) image.Image {
 	f, err := os.Open(filePath)
@@ -83,6 +85,8 @@ func DrawWorld(m core.Field) {
 			brush = flesh
 		case 8:
 			brush = mythril
+		case 10:
+			brush = grass
 		default:
 			brush = white
 		}
@@ -97,24 +101,7 @@ func SurfaceMask(w, h, level int) core.Field {
 	for i := 0; i < h; i++ {
 		img[i] = make([]int, w)
 	}
-	var sins []func(x float64) float64
-	for i := 0; i < 8; i++ {
-		w := float64(1+rand.Intn(8)) / 100
-		A := 5. * float64(1+rand.Intn(5))
-		sins = append(sins, func(x float64) float64 {
-			return A * math.Sin(x/w)
-		})
-	}
-	sinsum := func(x int) int {
-		r := 0
-		for _, f := range sins {
-			r += int(f(float64(x) / float64(w)))
-		}
-		if level+r < 0 {
-			return 0
-		}
-		return r
-	}
+	sinsum := randomSin(w, level)
 	for x := 0; x < w; x++ {
 		lh := sinsum(x)
 		for i := level + lh; i < h; i++ {
@@ -127,25 +114,6 @@ func SurfaceMask(w, h, level int) core.Field {
 		F: img,
 	}
 }
-
-//func CavesMask(proto [][]int, thresh int) core.Field {
-//	h := len(proto)
-//	w := len(proto[0])
-//	img := make([][]int, h)
-//	for i := 0; i < h; i++ {
-//		img[i] = make([]int, w)
-//	}
-//	for p := range core.Mesh(w, h) {
-//		if proto[p.Y][p.X] < thresh {
-//			img[p.Y][p.X] = 1
-//		}
-//	}
-//	return core.Field{
-//		W: w,
-//		H: h,
-//		F: img,
-//	}
-//}
 
 func Mask(W, H int, a, b float64, seed int64) core.Field {
 	perl := perlin.NewPerlin(a, b, 3, seed)
@@ -163,24 +131,25 @@ func Mask(W, H int, a, b float64, seed int64) core.Field {
 	return f
 }
 
-func Mask2(W, H int) core.Field {
-	p := core.RandomPoly(3, 50)
-	img1 := core.GenerateSpeedPool(p, W, H, core.GenerationOpts{
-		Scale:  7000,
-		A:      complex(4, 4),
-		Offset: complex(-360, -380),
-		Nit:    11,
-	})
-	for p := range core.Mesh(W, H) {
-		v := img1.At(p)
-		if v > 9 && v < 64 {
-			v = 1
-		} else {
-			v = 0
-		}
-		img1.Set(p, v)
+func randomSin(level, w int) func(int) int {
+	var sins []func(x float64) float64
+	for i := 0; i < 4; i++ {
+		w := float64(1+rand.Intn(8)) / 10
+		A := 5. * float64(1+rand.Intn(5))
+		sins = append(sins, func(x float64) float64 {
+			return A * math.Sin(x/w)
+		})
 	}
-	return img1
+	return func(x int) int {
+		r := 0
+		for _, f := range sins {
+			r += int(f(float64(x) / float64(w)))
+		}
+		if level+r < 0 {
+			return 0
+		}
+		return r
+	}
 }
 
 func randomTree() (offset, size core.P) {
@@ -195,4 +164,40 @@ func randomTree() (offset, size core.P) {
 			X: treeW,
 			Y: treeH,
 		}
+}
+
+func GroundLayer(w, h, level int) core.Field {
+	img := make([][]int, h)
+	for i := 0; i < h; i++ {
+		img[i] = make([]int, w)
+	}
+	sinsum := randomSin(w, level)
+	for x := 0; x < w; x++ {
+		lh := sinsum(x)
+		for i := level + lh; i > 0; i-- {
+			img[i][x] = 1
+		}
+	}
+	return core.Field{
+		W: w,
+		H: h,
+		F: img,
+	}
+}
+
+func GrassLayer(img core.Field, from, to int) core.Field {
+	w := img.W
+	h := img.H
+	for p := range core.Mesh(w, h) {
+		if p.Y == 0 {
+			continue
+		}
+		if img.At(p) != from {
+			continue
+		}
+		if img.At(core.P{X: p.X, Y: p.Y - 1}) == 0 {
+			img.Set(p, to)
+		}
+	}
+	return img
 }

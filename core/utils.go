@@ -80,6 +80,13 @@ func Mul(img1, img2 Field) Field {
 	return img1
 }
 
+func MulI(img Field, i int) Field {
+	for p := range Mesh(img.W, img.H) {
+		img.Set(p, img.At(p)*i)
+	}
+	return img
+}
+
 func Sum(img1, img2 Field) Field {
 	for p := range Mesh(img1.W, img1.H) {
 		img1.Set(p, img1.At(p)+img2.At(p))
@@ -92,6 +99,17 @@ func Overlay(img1, img2 Field, b int) Field {
 		v := img2.At(p)
 		if v != b {
 			img1.Set(p, v)
+		}
+	}
+	return img1
+}
+
+func Replace(img1, img2 Field) Field {
+	for p := range Mesh(img1.W, img1.H) {
+		v1 := img1.At(p)
+		v2 := img2.At(p)
+		if v1 != 0 && v2 != 0 {
+			img1.Set(p, v2)
 		}
 	}
 	return img1
