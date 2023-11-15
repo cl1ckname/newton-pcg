@@ -27,7 +27,7 @@ def plot3d():
     # Z = 1 / (Z + 1)
     # Z = np.log(Z)
     # Z = Z / np.max(Z) * 2
-    Z = np.exp(-np.power(Z - np.mean(Z), 2) / (2 * np.var(Z))) / np.std(Z)
+    Z = np.exp(-np.power(Z - np.mean(Z), 2) / (2 * np.var(Z))) / np.std(Z)й
 
     # Z = sp.ndimage.filters.gaussian_filter(Z, [3,2], mode='constant')
 

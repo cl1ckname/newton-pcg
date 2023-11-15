@@ -73,9 +73,10 @@ func Mix(img1, img2 Field, n int) Field {
 }
 
 func Mul(img1, img2 Field) Field {
-	for p := range Mesh(img1.W, img1.H) {
+	MeshCB4G(img1.W, img1.H, func(p P) {
 		img1.Set(p, img1.At(p)*img2.At(p))
-	}
+	})
+
 	return img1
 }
 
@@ -124,3 +125,17 @@ func Ptr[T any](v T) *T {
 //
 //	for p := range Mesh()
 //}
+
+func MeshCB4G(w, h int, cb func(P)) {
+	halfIter := func(startX, endX, startY, endY int) {
+		for x := startX; x < endX; x++ {
+			for y := startY; y < endY; y++ {
+				cb(P{x, y})
+			}
+		}
+	}
+	go halfIter(0, w/2, 0, h/2)
+	go halfIter(w/2, w, 0, h/2)
+	go halfIter(0, w/2, h/2, h)
+	go halfIter(w/2, w, h/2, h)
+}

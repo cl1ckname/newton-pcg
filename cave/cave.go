@@ -8,6 +8,7 @@ import (
 	"math"
 	"math/rand"
 	"newton-pcg/core"
+	"newton-pcg/perlin"
 	"os"
 )
 
@@ -22,7 +23,9 @@ const (
 	marblePath  = "assets/Marble_Block.png"
 	fleshPath   = "assets/Flesh_Block.png"
 	mythrilPath = "assets/Mythril_Ore.png"
-	imageSize   = 8
+
+	treePath  = "assets/Tree_SpriteSheet_Outlined.png"
+	imageSize = 8
 )
 
 var stone = getImageFromFilePath(stonePath)
@@ -35,6 +38,7 @@ var white = getImageFromFilePath(whitePath)
 var marble = getImageFromFilePath(marblePath)
 var flesh = getImageFromFilePath(fleshPath)
 var mythril = getImageFromFilePath(mythrilPath)
+var tree = getImageFromFilePath(treePath)
 
 func getImageFromFilePath(filePath string) image.Image {
 	f, err := os.Open(filePath)
@@ -55,7 +59,7 @@ func DrawWorld(m core.Field) {
 	canvas := image.NewRGBA(image.Rect(0, 0, m.W*imageSize, m.H*imageSize))
 	r := image.Rect(0, 0, 16, 16)
 
-	for p := range core.Mesh(m.W, m.H) {
+	core.MeshCB4G(m.W, m.H, func(p core.P) {
 		offset := image.Pt(p.X*imageSize, p.Y*imageSize)
 		pos := r.Add(offset)
 		v := m.At(p)
@@ -82,8 +86,9 @@ func DrawWorld(m core.Field) {
 		default:
 			brush = white
 		}
-		draw.Draw(canvas, pos, brush, image.Point{}, draw.Src)
-	}
+		draw.Draw(canvas, pos, brush, image.Point{2, 2}, draw.Src)
+	})
+
 	core.SaveImage(canvas)
 }
 
@@ -123,21 +128,51 @@ func SurfaceMask(w, h, level int) core.Field {
 	}
 }
 
-func CavesMask(proto [][]int, thresh int) core.Field {
-	h := len(proto)
-	w := len(proto[0])
-	img := make([][]int, h)
-	for i := 0; i < h; i++ {
-		img[i] = make([]int, w)
-	}
-	for p := range core.Mesh(w, h) {
-		if proto[p.Y][p.X] < thresh {
-			img[p.Y][p.X] = 1
+//func CavesMask(proto [][]int, thresh int) core.Field {
+//	h := len(proto)
+//	w := len(proto[0])
+//	img := make([][]int, h)
+//	for i := 0; i < h; i++ {
+//		img[i] = make([]int, w)
+//	}
+//	for p := range core.Mesh(w, h) {
+//		if proto[p.Y][p.X] < thresh {
+//			img[p.Y][p.X] = 1
+//		}
+//	}
+//	return core.Field{
+//		W: w,
+//		H: h,
+//		F: img,
+//	}
+//}
+
+func Mask(W, H int) core.Field {
+	perl := perlin.NewPerlin(1, 5, 3, 2)
+
+	f := core.NewField(W, H)
+
+	for p := range core.Mesh(W, H) {
+		pv := int(perl.Noise2D(float64(p.X)/float64(W), float64(p.Y)/float64(H)) * 255)
+		var v int
+		if pv > 100 || pv < 60 {
+			v = 1
 		}
+		f.Set(p, v)
 	}
-	return core.Field{
-		W: w,
-		H: h,
-		F: img,
-	}
+	return f
+}
+
+func randomTree() (offset, size core.P) {
+	x := rand.Intn(10)
+	y := x % 2
+	treeW := tree.Bounds().Max.X / 5
+	treeH := tree.Bounds().Max.Y / 2
+	return core.P{
+			X: x * treeW,
+			Y: y * treeH,
+		}, core.P{
+			X: treeW,
+			Y: treeH,
+		}
 }

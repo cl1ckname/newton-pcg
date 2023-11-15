@@ -1,5 +1,17 @@
 package core
 
+func NewField(w, h int) Field {
+	var m [][]int
+	for i := 0; i < h; i++ {
+		m = append(m, make([]int, w))
+	}
+	return Field{
+		W: w,
+		H: h,
+		F: m,
+	}
+}
+
 type Field struct {
 	W int
 	H int

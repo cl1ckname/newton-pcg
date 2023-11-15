@@ -40,6 +40,9 @@ func main() {
 	mask := cave.SurfaceMask(W, H, 120)
 	img1 = core.Mul(img1, mask)
 
+	caveMask := cave.Mask(W, H)
+	img1 = core.Mul(img1, caveMask)
+
 	//cavePool := core.RandomPool(5, W, H, core.GenerationOpts{
 	//	Scale:  20,
 	//	A:      complex(2, 1),
