@@ -98,7 +98,7 @@ func SurfaceMask(w, h, level int) core.Field {
 		img[i] = make([]int, w)
 	}
 	var sins []func(x float64) float64
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 8; i++ {
 		w := float64(1+rand.Intn(8)) / 100
 		A := 5. * float64(1+rand.Intn(5))
 		sins = append(sins, func(x float64) float64 {
@@ -147,8 +147,8 @@ func SurfaceMask(w, h, level int) core.Field {
 //	}
 //}
 
-func Mask(W, H int) core.Field {
-	perl := perlin.NewPerlin(1, 5, 3, 2)
+func Mask(W, H int, a, b float64, seed int64) core.Field {
+	perl := perlin.NewPerlin(a, b, 3, seed)
 
 	f := core.NewField(W, H)
 
@@ -161,6 +161,26 @@ func Mask(W, H int) core.Field {
 		f.Set(p, v)
 	}
 	return f
+}
+
+func Mask2(W, H int) core.Field {
+	p := core.RandomPoly(3, 50)
+	img1 := core.GenerateSpeedPool(p, W, H, core.GenerationOpts{
+		Scale:  7000,
+		A:      complex(4, 4),
+		Offset: complex(-360, -380),
+		Nit:    11,
+	})
+	for p := range core.Mesh(W, H) {
+		v := img1.At(p)
+		if v > 9 && v < 64 {
+			v = 1
+		} else {
+			v = 0
+		}
+		img1.Set(p, v)
+	}
+	return img1
 }
 
 func randomTree() (offset, size core.P) {

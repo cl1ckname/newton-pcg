@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"newton-pcg/cave"
 	"newton-pcg/core"
+	"time"
 )
 
 const (
@@ -11,8 +12,10 @@ const (
 	W = 720 * 2
 )
 
+var SEED = time.Now().Unix()
+
 func main() {
-	rand.Seed(42)
+	rand.Seed(SEED)
 	//n := 6
 	img1 := core.RandomPool(6, W, H, core.GenerationOpts{
 		Scale:     15,
@@ -40,7 +43,11 @@ func main() {
 	mask := cave.SurfaceMask(W, H, 120)
 	img1 = core.Mul(img1, mask)
 
-	caveMask := cave.Mask(W, H)
+	caveMask := cave.Mask(W, H, 2, 4, SEED)
+	img1 = core.Mul(img1, caveMask)
+	caveMask = cave.Mask(W, H, 1, 6, SEED)
+	img1 = core.Mul(img1, caveMask)
+	caveMask = cave.Mask(W, H, 0.5, 8, SEED)
 	img1 = core.Mul(img1, caveMask)
 
 	//cavePool := core.RandomPool(5, W, H, core.GenerationOpts{
