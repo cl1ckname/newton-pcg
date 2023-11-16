@@ -4,18 +4,10 @@ import (
 	"math/rand"
 	"newton-pcg/cave"
 	"newton-pcg/core"
+	"testing"
 )
 
-const (
-	H = 240 * 2
-	W = 480 * 2
-)
-
-//var SEED = time.Now().Unix()
-
-var SEED = 42
-
-func main() {
+func TestCave(t *testing.T) {
 	rand.Seed(int64(SEED))
 	//n := 6
 	img1 := core.RandomPool(6, W, H, core.GenerationOpts{

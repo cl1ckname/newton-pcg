@@ -124,7 +124,7 @@ func AddInt(img1 Field, i int) Field {
 }
 
 func SaveImage(img image.Image) {
-	f, err := os.Create("out.jpg")
+	f, err := os.Create("out.png")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -134,6 +134,10 @@ func SaveImage(img image.Image) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//err = png.Encode(f, img)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 }
 
 func Ptr[T any](v T) *T {

@@ -3,6 +3,7 @@ package cave
 import (
 	xdraw "golang.org/x/image/draw"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 	"log"
@@ -54,10 +55,23 @@ func getImageFromFilePath(filePath string) image.Image {
 	}
 	defer f.Close()
 	img, err := png.Decode(f)
+	rgba := image.NewRGBA(img.Bounds())
+
+	core.MeshCB4G(img.Bounds().Dx(), img.Bounds().Dy(), func(p core.P) {
+		r, g, b, _ := img.At(p.X, p.Y).RGBA()
+		rgb := color.RGBA{
+			R: uint8(r),
+			G: uint8(g),
+			B: uint8(b),
+			A: 255,
+		}
+		rgba.Set(p.X, p.Y, rgb)
+	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	return img
+	return rgba
 }
 
 func DrawWorld(m core.Field) {
@@ -121,13 +135,21 @@ func drawBackground(m core.Field, canvas *image.RGBA) {
 		draw.Draw(canvas, r, bg, image.Point{}, draw.Src)
 	}
 
+	fillDeepBackground(m, canvas, bg)
+	fillBackgroundCaves(m, canvas)
+}
+
+func fillDeepBackground(m core.Field, canvas *image.RGBA, bg *image.RGBA) {
 	for x := 0; x < m.W*16; x += dirtWall.Bounds().Dx() {
 		for y := bg.Bounds().Dy(); y < m.H*16; y += dirtWall.Bounds().Dy() {
 			r := bg.Bounds().Add(image.Pt(x, y))
 			draw.Draw(canvas, r, dirtWall, image.Point{}, draw.Src)
 		}
 	}
-	bgr := image.Rect(0, 0, bg.Bounds().Dx(), bg.Bounds().Dy())
+}
+
+func fillBackgroundCaves(m core.Field, canvas *image.RGBA) {
+	bgr := dirtWall.Bounds()
 	core.MeshCB4G(m.W, m.H, func(p core.P) {
 		if m.At(p) != 0 {
 			r := bgr.Add(image.Pt(p.X*blockSize, p.Y*blockSize))
