@@ -45,11 +45,11 @@ func main() {
 	mask := cave.SurfaceMask(W, H, 120)
 	img1 = core.Mul(img1, mask)
 
-	caveMask := cave.Mask(W, H, 1, 4, int64(SEED))
+	caveMask := cave.Mask(W, H, 1, 8, int64(SEED))
 	img1 = core.Mul(img1, caveMask)
-	caveMask = cave.Mask(W, H, 1, 6, int64(SEED))
+	caveMask = cave.Mask(W, H, 0.5, 4, int64(SEED))
 	img1 = core.Mul(img1, caveMask)
-	caveMask = cave.Mask(W, H, 0.5, 8, int64(SEED))
+	caveMask = cave.Mask(W, H, 0.5, 6, int64(SEED))
 	img1 = core.Mul(img1, caveMask)
 
 	groundMask := cave.GroundLayer(W, H, 210)
@@ -57,15 +57,6 @@ func main() {
 	img1 = core.Replace(img1, groundMask)
 
 	img1 = cave.GrassLayer(img1, 2, 10)
-
-	//cavePool := core.RandomPool(5, W, H, core.GenerationOpts{
-	//	Scale:  20,
-	//	A:      complex(2, 1),
-	//	Offset: complex(0, 5),
-	//	Nit:    10,
-	//})
-	//caveMask := cave.CavesMask(cavePool, 2)
-	//img1 = core.Mul(img1, caveMask)
 
 	cave.DrawWorld(img1)
 }

@@ -1,6 +1,7 @@
 package cave
 
 import (
+	xdraw "golang.org/x/image/draw"
 	"image"
 	"image/draw"
 	"image/png"
@@ -25,8 +26,10 @@ const (
 	mythrilPath = "assets/Mythril_Ore.png"
 	grassPath   = "assets/Grass.png"
 
-	treePath  = "assets/Tree_SpriteSheet_Outlined.png"
-	imageSize = 8
+	dirtWallPath   = "assets/Dirt_Wall_(placed).png"
+	backgroundPath = "assets/clouds.png"
+	treePath       = "assets/Tree_SpriteSheet_Outlined.png"
+	blockSize      = 8
 )
 
 var stone = getImageFromFilePath(stonePath)
@@ -41,6 +44,8 @@ var flesh = getImageFromFilePath(fleshPath)
 var mythril = getImageFromFilePath(mythrilPath)
 var tree = getImageFromFilePath(treePath)
 var grass = getImageFromFilePath(grassPath)
+var background = getImageFromFilePath(backgroundPath)
+var dirtWall = getImageFromFilePath(dirtWallPath)
 
 func getImageFromFilePath(filePath string) image.Image {
 	f, err := os.Open(filePath)
@@ -58,13 +63,40 @@ func getImageFromFilePath(filePath string) image.Image {
 func DrawWorld(m core.Field) {
 	//m = smooth(m)
 
-	canvas := image.NewRGBA(image.Rect(0, 0, m.W*imageSize, m.H*imageSize))
+	canvas := image.NewRGBA(image.Rect(0, 0, m.W*blockSize, m.H*blockSize))
 	r := image.Rect(0, 0, 16, 16)
 
+	newSize := image.Rect(0, 0, m.W/6*16, m.H/4*16)
+	bg := image.NewRGBA(newSize)
+	xdraw.NearestNeighbor.Scale(bg, bg.Bounds(), background, background.Bounds(), draw.Src, nil)
+
+	for x := 0; x < m.W*16; x += bg.Bounds().Dx() {
+		println(x)
+		pos := image.Pt(x, 0)
+		r := bg.Bounds().Add(pos)
+		draw.Draw(canvas, r, bg, image.Point{}, draw.Src)
+	}
+
+	for x := 0; x < m.W*16; x += dirtWall.Bounds().Dx() {
+		for y := bg.Bounds().Dy(); y < m.H*16; y += dirtWall.Bounds().Dy() {
+			r := bg.Bounds().Add(image.Pt(x, y))
+			draw.Draw(canvas, r, dirtWall, image.Point{}, draw.Src)
+		}
+	}
 	core.MeshCB4G(m.W, m.H, func(p core.P) {
-		offset := image.Pt(p.X*imageSize, p.Y*imageSize)
+		if m.At(p) != 0 {
+			r := bg.Bounds().Add(image.Pt(p.X*blockSize, p.Y*blockSize))
+			draw.Draw(canvas, r, dirtWall, image.Point{}, draw.Src)
+		}
+	})
+
+	core.MeshCB4G(m.W, m.H, func(p core.P) {
+		offset := image.Pt(p.X*blockSize, p.Y*blockSize)
 		pos := r.Add(offset)
 		v := m.At(p)
+		if v == 0 {
+			return
+		}
 		var brush image.Image
 		switch v {
 		case 0:
@@ -134,7 +166,7 @@ func Mask(W, H int, a, b float64, seed int64) core.Field {
 func randomSin(level, w int) func(int) int {
 	var sins []func(x float64) float64
 	for i := 0; i < 4; i++ {
-		w := float64(1+rand.Intn(8)) / 10
+		w := float64(1+rand.Intn(8)) / 5
 		A := 5. * float64(1+rand.Intn(5))
 		sins = append(sins, func(x float64) float64 {
 			return A * math.Sin(x/w)

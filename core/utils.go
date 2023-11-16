@@ -5,6 +5,7 @@ import (
 	"image/jpeg"
 	"log"
 	"os"
+	"sync"
 )
 
 func NewtonIter(f, fDx Unary, start complex128, nit int, a complex128) complex128 {
@@ -145,15 +146,19 @@ func Ptr[T any](v T) *T {
 //}
 
 func MeshCB4G(w, h int, cb func(P)) {
+	wg := sync.WaitGroup{}
+	wg.Add(4)
 	halfIter := func(startX, endX, startY, endY int) {
 		for x := startX; x < endX; x++ {
 			for y := startY; y < endY; y++ {
 				cb(P{x, y})
 			}
 		}
+		wg.Done()
 	}
 	go halfIter(0, w/2, 0, h/2)
 	go halfIter(w/2, w, 0, h/2)
 	go halfIter(0, w/2, h/2, h)
 	go halfIter(w/2, w, h/2, h)
+	wg.Wait()
 }
