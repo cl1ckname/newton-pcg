@@ -64,32 +64,16 @@ func DrawWorld(m core.Field) {
 	//m = smooth(m)
 
 	canvas := image.NewRGBA(image.Rect(0, 0, m.W*blockSize, m.H*blockSize))
+
+	drawBackground(m, canvas)
+	drawTrees(m, canvas, 30)
+	drawForeground(m, canvas)
+
+	core.SaveImage(canvas)
+}
+
+func drawForeground(m core.Field, canvas *image.RGBA) {
 	r := image.Rect(0, 0, 16, 16)
-
-	newSize := image.Rect(0, 0, m.W/6*16, m.H/4*16)
-	bg := image.NewRGBA(newSize)
-	xdraw.NearestNeighbor.Scale(bg, bg.Bounds(), background, background.Bounds(), draw.Src, nil)
-
-	for x := 0; x < m.W*16; x += bg.Bounds().Dx() {
-		println(x)
-		pos := image.Pt(x, 0)
-		r := bg.Bounds().Add(pos)
-		draw.Draw(canvas, r, bg, image.Point{}, draw.Src)
-	}
-
-	for x := 0; x < m.W*16; x += dirtWall.Bounds().Dx() {
-		for y := bg.Bounds().Dy(); y < m.H*16; y += dirtWall.Bounds().Dy() {
-			r := bg.Bounds().Add(image.Pt(x, y))
-			draw.Draw(canvas, r, dirtWall, image.Point{}, draw.Src)
-		}
-	}
-	core.MeshCB4G(m.W, m.H, func(p core.P) {
-		if m.At(p) != 0 {
-			r := bg.Bounds().Add(image.Pt(p.X*blockSize, p.Y*blockSize))
-			draw.Draw(canvas, r, dirtWall, image.Point{}, draw.Src)
-		}
-	})
-
 	core.MeshCB4G(m.W, m.H, func(p core.P) {
 		offset := image.Pt(p.X*blockSize, p.Y*blockSize)
 		pos := r.Add(offset)
@@ -122,10 +106,55 @@ func DrawWorld(m core.Field) {
 		default:
 			brush = white
 		}
-		draw.Draw(canvas, pos, brush, image.Point{2, 2}, draw.Src)
+		draw.Draw(canvas, pos, brush, image.Point{X: 2, Y: 2}, draw.Src)
 	})
+}
 
-	core.SaveImage(canvas)
+func drawBackground(m core.Field, canvas *image.RGBA) {
+	newSize := image.Rect(0, 0, m.W/6*16, m.H/4*16)
+	bg := image.NewRGBA(newSize)
+	xdraw.NearestNeighbor.Scale(bg, bg.Bounds(), background, background.Bounds(), draw.Src, nil)
+
+	for x := 0; x < m.W*16; x += bg.Bounds().Dx() {
+		pos := image.Pt(x, 0)
+		r := bg.Bounds().Add(pos)
+		draw.Draw(canvas, r, bg, image.Point{}, draw.Src)
+	}
+
+	for x := 0; x < m.W*16; x += dirtWall.Bounds().Dx() {
+		for y := bg.Bounds().Dy(); y < m.H*16; y += dirtWall.Bounds().Dy() {
+			r := bg.Bounds().Add(image.Pt(x, y))
+			draw.Draw(canvas, r, dirtWall, image.Point{}, draw.Src)
+		}
+	}
+	bgr := image.Rect(0, 0, bg.Bounds().Dx(), bg.Bounds().Dy())
+	core.MeshCB4G(m.W, m.H, func(p core.P) {
+		if m.At(p) != 0 {
+			r := bgr.Add(image.Pt(p.X*blockSize, p.Y*blockSize))
+			draw.Draw(canvas, r, dirtWall, image.Point{}, draw.Src)
+		}
+	})
+}
+
+func drawTrees(m core.Field, canvas *image.RGBA, n int) {
+	xs := make([]int, n)
+	for x := 0; x < n; x++ {
+		xs[x] = rand.Intn(m.W)
+	}
+	ys := make([]int, n)
+	for x := 0; x < n; x++ {
+		for y := m.H - 1; y >= 0; y-- {
+			if m.At(core.P{xs[x], y}) != 0 {
+				ys[x] = y
+			}
+		}
+	}
+	for i := 0; i < n; i++ {
+		rtree := randomTree(300, 500)
+		pos := image.Pt(xs[i]*blockSize-rtree.Bounds().Dx()/2, ys[i]*blockSize-rtree.Bounds().Dy())
+		sr := rtree.Bounds().Add(pos)
+		draw.Draw(canvas, sr, rtree, rtree.Bounds().Min, draw.Over)
+	}
 }
 
 func SurfaceMask(w, h, level int) core.Field {
@@ -184,18 +213,22 @@ func randomSin(level, w int) func(int) int {
 	}
 }
 
-func randomTree() (offset, size core.P) {
-	x := rand.Intn(10)
-	y := x % 2
-	treeW := tree.Bounds().Max.X / 5
-	treeH := tree.Bounds().Max.Y / 2
-	return core.P{
-			X: x * treeW,
-			Y: y * treeH,
-		}, core.P{
-			X: treeW,
-			Y: treeH,
-		}
+func randomTree(w, h int) image.Image {
+	n := rand.Intn(7)
+	x := n % 5
+	//y := n / 2
+	y := 0
+	treeW := tree.Bounds().Dx() / 5
+	treeH := tree.Bounds().Dy() / 2
+	treeBounds := image.Rect(x*treeW, y*treeH, (x+1)*treeW, (y+1)*treeH)
+
+	img := image.NewRGBA(image.Rect(0, 0, w, h))
+	xdraw.NearestNeighbor.Scale(img, img.Bounds(), tree, treeBounds, draw.Src, nil)
+	//draw.Draw(img, img.Bounds(), tree, image.Point{
+	//	X: x * treeW,
+	//	Y: y * treeH,
+	//}, draw.Src)
+	return img
 }
 
 func GroundLayer(w, h, level int) core.Field {

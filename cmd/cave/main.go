@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"newton-pcg/cave"
 	"newton-pcg/core"
-	"time"
 )
 
 const (
@@ -12,9 +11,9 @@ const (
 	W = 720 * 2
 )
 
-var SEED = time.Now().Unix()
+//var SEED = time.Now().Unix()
 
-//var SEED = 42
+var SEED = 42
 
 func main() {
 	rand.Seed(int64(SEED))
