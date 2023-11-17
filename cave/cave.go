@@ -3,7 +3,6 @@ package cave
 import (
 	xdraw "golang.org/x/image/draw"
 	"image"
-	"image/color"
 	"image/draw"
 	"image/png"
 	"log"
@@ -55,29 +54,16 @@ func getImageFromFilePath(filePath string) image.Image {
 	}
 	defer f.Close()
 	img, err := png.Decode(f)
-	rgba := image.NewRGBA(img.Bounds())
-
-	core.MeshCB4G(img.Bounds().Dx(), img.Bounds().Dy(), func(p core.P) {
-		r, g, b, _ := img.At(p.X, p.Y).RGBA()
-		rgb := color.RGBA{
-			R: uint8(r),
-			G: uint8(g),
-			B: uint8(b),
-			A: 255,
-		}
-		rgba.Set(p.X, p.Y, rgb)
-	})
-
 	if err != nil {
 		log.Fatal(err)
 	}
-	return rgba
+	return img
 }
 
 func DrawWorld(m core.Field) {
 	//m = smooth(m)
 
-	canvas := image.NewRGBA(image.Rect(0, 0, m.W*blockSize, m.H*blockSize))
+	canvas := image.NewNRGBA(image.Rect(0, 0, m.W*blockSize, m.H*blockSize))
 
 	drawBackground(m, canvas)
 	drawTrees(m, canvas, 30)
@@ -86,7 +72,7 @@ func DrawWorld(m core.Field) {
 	core.SaveImage(canvas)
 }
 
-func drawForeground(m core.Field, canvas *image.RGBA) {
+func drawForeground(m core.Field, canvas *image.NRGBA) {
 	r := image.Rect(0, 0, 16, 16)
 	core.MeshCB4G(m.W, m.H, func(p core.P) {
 		offset := image.Pt(p.X*blockSize, p.Y*blockSize)
@@ -124,9 +110,9 @@ func drawForeground(m core.Field, canvas *image.RGBA) {
 	})
 }
 
-func drawBackground(m core.Field, canvas *image.RGBA) {
+func drawBackground(m core.Field, canvas *image.NRGBA) {
 	newSize := image.Rect(0, 0, m.W/6*16, m.H/4*16)
-	bg := image.NewRGBA(newSize)
+	bg := image.NewNRGBA(newSize)
 	xdraw.NearestNeighbor.Scale(bg, bg.Bounds(), background, background.Bounds(), draw.Src, nil)
 
 	for x := 0; x < m.W*16; x += bg.Bounds().Dx() {
@@ -139,7 +125,7 @@ func drawBackground(m core.Field, canvas *image.RGBA) {
 	fillBackgroundCaves(m, canvas)
 }
 
-func fillDeepBackground(m core.Field, canvas *image.RGBA, bg *image.RGBA) {
+func fillDeepBackground(m core.Field, canvas *image.NRGBA, bg *image.NRGBA) {
 	for x := 0; x < m.W*16; x += dirtWall.Bounds().Dx() {
 		for y := bg.Bounds().Dy(); y < m.H*16; y += dirtWall.Bounds().Dy() {
 			r := bg.Bounds().Add(image.Pt(x, y))
@@ -148,7 +134,7 @@ func fillDeepBackground(m core.Field, canvas *image.RGBA, bg *image.RGBA) {
 	}
 }
 
-func fillBackgroundCaves(m core.Field, canvas *image.RGBA) {
+func fillBackgroundCaves(m core.Field, canvas *image.NRGBA) {
 	bgr := dirtWall.Bounds()
 	core.MeshCB4G(m.W, m.H, func(p core.P) {
 		if m.At(p) != 0 {
@@ -158,7 +144,7 @@ func fillBackgroundCaves(m core.Field, canvas *image.RGBA) {
 	})
 }
 
-func drawTrees(m core.Field, canvas *image.RGBA, n int) {
+func drawTrees(m core.Field, canvas *image.NRGBA, n int) {
 	xs := make([]int, n)
 	for x := 0; x < n; x++ {
 		xs[x] = rand.Intn(m.W)

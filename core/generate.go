@@ -26,11 +26,11 @@ func GeneratePool(poly Poly, w, h int, opts GenerationOpts) Field {
 		img[i] = make([]int, w, w)
 	}
 
-	for p := range Mesh(w, h) {
+	MeshCB4G(w, h, func(p P) {
 		x, y := p.X, p.Y
 		xx := (float64(x) + real(opts.Offset)) / opts.Scale
 		yy := (float64(y) + imag(opts.Offset)) / opts.Scale
-		p := NewtonIter(poly.Eval, polyPrime.Eval, complex(xx, yy), opts.Nit, opts.A)
+		pp := NewtonIter(poly.Eval, polyPrime.Eval, complex(xx, yy), opts.Nit, opts.A)
 
 		var metric = Euclyd
 		if opts.Metric != nil {
@@ -41,9 +41,9 @@ func GeneratePool(poly Poly, w, h int, opts GenerationOpts) Field {
 			thr = *opts.DstThresh
 		}
 
-		closestRoot := ThreashMetricClosetPoint(p, roots, metric, thr)
+		closestRoot := ThreashMetricClosetPoint(pp, roots, metric, thr)
 		img[y][x] = closestRoot
-	}
+	})
 	return Field{
 		W: w,
 		H: h,

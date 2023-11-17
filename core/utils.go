@@ -2,7 +2,7 @@ package core
 
 import (
 	"image"
-	"image/jpeg"
+	"image/png"
 	"log"
 	"os"
 	"sync"
@@ -129,15 +129,15 @@ func SaveImage(img image.Image) {
 		log.Fatal(err)
 	}
 	defer f.Close()
-	opt := jpeg.Options{Quality: 50}
-	err = jpeg.Encode(f, img, &opt)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//err = png.Encode(f, img)
+	//opt := jpeg.Options{Quality: 50}
+	//err = jpeg.Encode(f, img, &opt)
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
+	err = png.Encode(f, img)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Ptr[T any](v T) *T {
