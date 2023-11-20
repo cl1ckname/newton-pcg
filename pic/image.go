@@ -4,16 +4,17 @@ import (
 	"image"
 	"image/color"
 	"image/color/palette"
+	"math"
 	"newton-pcg/core"
 )
 
 func DrawAndSave(m core.Field, roots []complex128) {
 	im := image.NewRGBA(image.Rect(0, 0, m.W, m.H))
 	for p := range core.Mesh(m.W, m.H) {
-		a := uint8(255 / float64(len(roots)-m.At(p)))
+		a := uint16(math.MaxUint16 / float64(len(roots)-m.At(p)))
 		im.Set(p.X, p.Y, core.HSVColor{
-			H: uint16(a) * 256,
-			S: 128,
+			H: a,
+			S: 200,
 			V: 224,
 		})
 	}
