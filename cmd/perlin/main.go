@@ -13,20 +13,7 @@ const (
 )
 
 func main() {
-	f := core.NewField(W, H)
-
-	perl := perlin.NewPerlin(1, 4, 3, 5)
-	core.MeshCB4G(W, H, func(p core.P) {
-		pv := int(perl.Noise2D(float64(p.X)/W, float64(p.Y)/H) * 255)
-		var v int
-		if pv < 120 && pv > 60 {
-			v = 255
-		}
-		f.Set(p, v)
-	})
-
-	//b, _ := json.Marshal(f)
-	//println(string(b))
+	f := perlin.Field(W, H)
 	DrawAndSave(f)
 }
 
