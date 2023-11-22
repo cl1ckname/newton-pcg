@@ -4,13 +4,10 @@ import (
 	xdraw "golang.org/x/image/draw"
 	"image"
 	"image/draw"
-	"image/png"
-	"log"
 	"math"
 	"math/rand"
 	"newton-pcg/core"
 	"newton-pcg/perlin"
-	"os"
 )
 
 const (
@@ -32,33 +29,20 @@ const (
 	blockSize      = 8
 )
 
-var stone = getImageFromFilePath(stonePath)
-var dirt = getImageFromFilePath(dirtPath)
-var iron = getImageFromFilePath(ironOrePath)
-var gold = getImageFromFilePath(goldOrePath)
-var black = getImageFromFilePath(blackPath)
-var silt = getImageFromFilePath(siltPath)
-var white = getImageFromFilePath(whitePath)
-var marble = getImageFromFilePath(marblePath)
-var flesh = getImageFromFilePath(fleshPath)
-var mythril = getImageFromFilePath(mythrilPath)
-var tree = getImageFromFilePath(treePath)
-var grass = getImageFromFilePath(grassPath)
-var background = getImageFromFilePath(backgroundPath)
-var dirtWall = getImageFromFilePath(dirtWallPath)
-
-func getImageFromFilePath(filePath string) image.Image {
-	f, err := os.Open(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	img, err := png.Decode(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return img
-}
+var stone = core.GetImageFromFilePath(stonePath)
+var dirt = core.GetImageFromFilePath(dirtPath)
+var iron = core.GetImageFromFilePath(ironOrePath)
+var gold = core.GetImageFromFilePath(goldOrePath)
+var black = core.GetImageFromFilePath(blackPath)
+var silt = core.GetImageFromFilePath(siltPath)
+var white = core.GetImageFromFilePath(whitePath)
+var marble = core.GetImageFromFilePath(marblePath)
+var flesh = core.GetImageFromFilePath(fleshPath)
+var mythril = core.GetImageFromFilePath(mythrilPath)
+var tree = core.GetImageFromFilePath(treePath)
+var grass = core.GetImageFromFilePath(grassPath)
+var background = core.GetImageFromFilePath(backgroundPath)
+var dirtWall = core.GetImageFromFilePath(dirtWallPath)
 
 func DrawWorld(m core.Field) {
 	//m = smooth(m)

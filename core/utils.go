@@ -19,6 +19,22 @@ type P struct {
 	X, Y int
 }
 
+func (p P) Top() P {
+	return P{p.X, p.Y - 1}
+}
+
+func (p P) Bottom() P {
+	return P{p.X, p.Y + 1}
+}
+
+func (p P) Left() P {
+	return P{p.X - 1, p.Y}
+}
+
+func (p P) Right() P {
+	return P{p.X + 1, p.Y}
+}
+
 func Mesh(w, h int) <-chan P {
 	c := make(chan P, w*h)
 	go func() {
@@ -165,4 +181,17 @@ func MeshCB4G(w, h int, cb func(P)) {
 	go halfIter(0, w/2, h/2, h)
 	go halfIter(w/2, w, h/2, h)
 	wg.Wait()
+}
+
+func GetImageFromFilePath(filePath string) image.Image {
+	f, err := os.Open(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	img, err := png.Decode(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return img
 }
