@@ -51,13 +51,15 @@ func GeneratePool(poly Poly, w, h int, opts GenerationOpts) Field {
 	}
 }
 
-func GenerateSpeedPool(poly Poly, w, h int, opts GenerationOpts) Field {
+func GenerateSpeedPool(poly Poly, w, h int, opts GenerationOpts) FField {
 	polyPrime := poly.Prime()
-	img := make([][]int, h, h)
+	roots := poly.Roots()
+	img := make([][]float64, h, h)
 	for i := 0; i < h; i++ {
-		img[i] = make([]int, w, w)
+		img[i] = make([]float64, w, w)
 	}
-	var c1, c2 int
+	var mx float64
+	var s float64
 	for p := range Mesh(w, h) {
 		x, y := p.X, p.Y
 		xx := (float64(x) + real(opts.Offset)) / opts.Scale
@@ -68,35 +70,49 @@ func GenerateSpeedPool(poly Poly, w, h int, opts GenerationOpts) Field {
 		if opts.Metric != nil {
 			metric = *opts.Metric
 		}
-		//var thr = math.MaxFloat64
-		//if opts.DstThresh != nil {
-		//	thr = *opts.DstThresh
-		//}
-		v := metric(complex(xx, yy), p1)
-		if v > 10 {
-			v = 10
+		var thr = math.MaxFloat64
+		if opts.DstThresh != nil {
+			thr = *opts.DstThresh
 		}
-		//println(complex(xx, yy), p1, v, 1 / )
-
-		//v = math.Pow(2, -(v / float64(w)))
-		v = 1 / v
-		if v < 0.01 {
-			c1++
+		cls := ThreashMetricClosetPoint(p1, roots, metric, thr)
+		v := metric(roots[cls], p1)
+		v = 1 / (1 + v)
+		//v = math.Exp(-(v * v))
+		//v = SmoothStep(v, 0, 10)
+		img[y][x] = v
+		if v > mx {
+			mx = v
 		}
-		if v > 0.99 {
-			c2++
-		}
-		img[y][x] = int(v * 100)
+		s += v
 
 		//for r := range roots {
 		//	img[y][x] += int(metric(roots[r], p))
 		//}
 		//closestRoot := ThreashMetricClosetPoint(p, roots, metric, thr)
 	}
-	println("c", c1, "v", c2)
-	return Field{
+	for p := range Mesh(w, h) {
+		v := img[p.Y][p.X]
+		v = v - s/float64(w*h)
+		img[p.Y][p.X] = SmoothStep(math.Exp(-(v * v)), 1, 2)
+	}
+	return FField{
 		W: w,
 		H: h,
 		F: img,
 	}
+	//println("c", c1, "v", c2)
+	//return Field{
+	//	W: w,
+	//	H: h,
+	//	F: img,
+	//}
+}
+
+func SmoothStep(t, start, end float64) float64 {
+	t = math.Pow(t, 2) * (3 - (2 * t))
+	return Linear(t, start, end)
+}
+
+func Linear(t, start, end float64) float64 {
+	return t*(end-start) + start
 }
