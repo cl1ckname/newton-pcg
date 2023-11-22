@@ -1,11 +1,14 @@
 package core
 
 import (
+	"fmt"
+	"math"
+	"math/cmplx"
 	"math/rand"
 )
 
 type Poly struct {
-	comps []float64
+	comps []complex128
 	roots []complex128
 }
 
@@ -21,15 +24,15 @@ func (p Poly) Eval(z complex128) complex128 {
 	var res complex128
 	for i, a := range p.comps {
 		c := mypow(z, i)
-		res += complex(a, 0) * c
+		res += a * c
 	}
 	return res
 }
 
 func (p Poly) Prime() Poly {
-	newComps := make([]float64, len(p.comps)-1)
+	newComps := make([]complex128, len(p.comps)-1)
 	for i := 0; i <= len(p.comps)-2; i++ {
-		newComps[i] = p.comps[i+1] * float64(i+1)
+		newComps[i] = p.comps[i+1] * complex(float64(i+1), 0)
 	}
 	return Poly{newComps, nil}
 }
@@ -69,7 +72,17 @@ func FromRoots(roots []complex128) Poly {
 	}
 }
 
-func compsFromRoots(roots []complex128) []float64 {
+func CirclePoly(n, rad int) Poly {
+	roots := make([]complex128, n)
+	step := math.Pi / float64(n)
+	for i := 0; i < n; i++ {
+		roots[i] = cmplx.Rect(float64(rad), step*float64(i))
+	}
+	fmt.Println(roots)
+	return FromRoots(roots)
+}
+
+func compsFromRoots(roots []complex128) []complex128 {
 	coefs := make([]complex128, len(roots)+1)
 	coefs[1] = complex(1, 0)
 	coefs[0] = -roots[0]
@@ -83,9 +96,5 @@ func compsFromRoots(roots []complex128) []float64 {
 			coefs[j] += coefs[j+1] * (-r)
 		}
 	}
-	compsR := make([]float64, len(coefs))
-	for i, c := range coefs {
-		compsR[i] = real(c)
-	}
-	return compsR
+	return coefs
 }
