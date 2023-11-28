@@ -9,6 +9,7 @@ import (
 
 func BenchmarkPool(b *testing.B) {
 	for i := 0; i < b.N; i++ {
+		b.StartTimer()
 		v := core.RandomPool(5, W, H, core.GenerationOpts{
 			Scale:     100,
 			A:         complex(2, 1),
@@ -17,6 +18,7 @@ func BenchmarkPool(b *testing.B) {
 			Metric:    nil,
 			DstThresh: nil,
 		})
+		b.StopTimer()
 		_, err := fmt.Fprintf(io.Discard, "%v", v)
 		if err != nil {
 			panic(err)

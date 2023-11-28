@@ -15,7 +15,9 @@ const (
 
 func BenchmarkVoronoi(b *testing.B) {
 	for i := 0; i < b.N; i++ {
+		b.StartTimer()
 		v := voronoi.Random(W, H, N)
+		b.StopTimer()
 		_, err := fmt.Fprintf(io.Discard, "%v", v)
 		if err != nil {
 			panic(err)
