@@ -74,7 +74,7 @@ func FromRoots(roots []complex128) Poly {
 
 func CirclePoly(n, rad int) Poly {
 	roots := make([]complex128, n)
-	step := math.Pi / float64(n)
+	step := 2 * math.Pi / float64(n)
 	for i := 0; i < n; i++ {
 		roots[i] = cmplx.Rect(float64(rad), step*float64(i))
 	}

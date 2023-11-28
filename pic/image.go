@@ -11,11 +11,13 @@ import (
 func DrawAndSave(m core.Field, roots []complex128) {
 	im := image.NewRGBA(image.Rect(0, 0, m.W, m.H))
 	for p := range core.Mesh(m.W, m.H) {
-		a := uint16(math.MaxUint16 / float64(len(roots)-m.At(p)))
-		im.Set(p.X, p.Y, core.HSVColor{
-			H: a,
-			S: 200,
-			V: 224,
+		//a := uint16(math.MaxUint8 / float64(len(roots)-m.At(p)))
+		a := uint8(math.MaxUint8 / (1 + m.At(p)))
+		im.Set(p.X, p.Y, color.RGBA{
+			R: a,
+			G: a,
+			B: a,
+			A: 255,
 		})
 	}
 

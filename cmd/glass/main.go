@@ -15,12 +15,11 @@ import (
 const (
 	W = 720
 	H = 720
-	N = 5
 )
 
 func main() {
 	rand.Seed(42)
-	img := Generate(W, H, N)
+	img := Generate(W, H)
 	lena := core.GetImageFromFilePath("assets/Lenna.png")
 	ToImage(img, lena)
 }

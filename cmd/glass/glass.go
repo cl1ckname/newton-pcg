@@ -4,21 +4,21 @@ import (
 	"newton-pcg/core"
 )
 
-func Generate(w, h, n int) core.Field {
-	ply := core.RandomPoly(4, 500)
+func Generate(w, h int) core.Field {
+	ply := core.CirclePoly(3, 5)
 	img := core.GeneratePool(ply, w, h, core.GenerationOpts{
-		Scale:     70,
+		Scale:     500,
 		A:         complex(2, 1),
-		Offset:    complex(-float64(w)/2+500, -float64(h)/2),
-		Nit:       14,
-		Metric:    nil,
+		Offset:    complex(-float64(w)/2, -float64(h)/2+200),
+		Nit:       9,
+		Metric:    core.Ptr(core.Mankhaten),
 		DstThresh: nil,
 	})
 	core.AddInt(img, 1)
 
 	imgCpy := findContours(img)
 	img = imgCpy
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 1; i++ {
 		img = erose(img)
 	}
 
